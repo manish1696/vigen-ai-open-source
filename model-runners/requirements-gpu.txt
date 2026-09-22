@@ -1,0 +1,8 @@
+torch>=2.6
+torchvision
+torchaudio
+transformers>=4.51
+diffusers>=0.36
+accelerate>=1.6
+sentencepiece
+chatterbox-tts

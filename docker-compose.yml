@@ -1,0 +1,40 @@
+services:
+  frontend:
+    build:
+      context: ./app/frontend
+      args: { VITE_API_URL: /api }
+    ports: ["3000:80"]
+    depends_on: [backend]
+    networks: [vigen]
+  backend:
+    build: ./app/backend
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-replace-with-a-long-random-secret}
+      DATABASE_PATH: /data/vigen.db
+      MEDIA_ROOT: /data/media
+      CREW_ENDPOINT_URL: http://crew-api:8001
+      CREW_SERVICE_TOKEN: ${CREW_SERVICE_TOKEN:-replace-service-token}
+      CORS_ORIGINS: http://localhost:3000
+    volumes: [vigen-data:/data]
+    depends_on: [crew-api]
+    networks: [vigen]
+  crew-api:
+    build:
+      context: ./crew-api
+      dockerfile: dockerfile
+    environment:
+      MEDIA_ROOT: /data/media
+      CREW_SERVICE_TOKEN: ${CREW_SERVICE_TOKEN:-replace-service-token}
+      GENERATION_PROVIDER: ${GENERATION_PROVIDER:-demo}
+      OLLAMA_URL: ${OLLAMA_URL:-http://host.docker.internal:11434}
+      LLM_MODEL: ${LLM_MODEL:-qwen3.5:9b}
+      IMAGE_COMMAND: ${IMAGE_COMMAND:-}
+      VIDEO_COMMAND: ${VIDEO_COMMAND:-}
+      TTS_COMMAND: ${TTS_COMMAND:-}
+      MUSIC_COMMAND: ${MUSIC_COMMAND:-}
+    volumes: [vigen-data:/data]
+    ports: ["8001:8001"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+    networks: [vigen]
+volumes: { vigen-data: {} }
+networks: { vigen: {} }
